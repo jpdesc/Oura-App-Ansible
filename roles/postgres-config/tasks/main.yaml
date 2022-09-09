@@ -1,0 +1,117 @@
+---
+- name: Install required packages
+  apt:
+    name:
+      - postgresql
+      - python3-psycopg2
+      - postgresql-contrib
+    state: latest
+  tags: postgres
+
+- name: Enable Postgresql
+  ansible.builtin.service:
+    name: postgresql@14-main
+    enabled: yes
+  tags: postgres
+
+- name: Start service postgresql, if not started
+  ansible.builtin.service:
+    name: postgresql@14-main
+    state: started
+  tags: postgres
+
+- name: Ensure PostgreSQL is listening on server.jpdesc.com
+  lineinfile:
+    dest: /etc/postgresql/14/main/postgresql.conf
+    regexp: '^listen_addresses\s*='
+    line: "listen_addresses = localhost"
+    state: present
+  notify: Restart postgresql
+  tags: postgres
+
+- name: Set "unix_socket_directories" in postgresql.conf
+  lineinfile:
+    dest: /etc/postgresql/14/main/postgresql.conf
+    regexp: '^unix_socket_directories\s*='
+    line: "unix_socket_directories = '/var/run/postgresql, /tmp'"
+    state: present
+  notify: Restart postgresql
+  tags: postgres
+
+- name: Create the database specified in vars
+  become: true
+  become_user: postgres
+  postgresql_db: name={{ db_name }}
+    template='template0'
+    state=present
+    port=5432
+  tags: postgres
+
+- name: Create db user for jwa.
+  postgresql_user:
+    state: present
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    priv: ALL
+    db: "{{ db_name }}"
+    role_attr_flags: SUPERUSER
+  become: yes
+  become_user: postgres
+  register: new_db
+  tags: postgres
+
+# - name: "Grant db user access to app db"
+#   postgresql_privs:
+#     type: database
+#     database: "{{ db_name }}"
+#     roles: "{{ db_user }}"
+#     password: "{{ db_password }}"
+#     priv: ALL
+#     state: present
+#   become: true
+#   become_user: postgres
+#   tags: postgres
+
+- name: "Allow md5 connection for the db user"
+  postgresql_pg_hba:
+    dest: "/etc/postgresql/14/main/pg_hba.conf"
+    contype: host
+    databases: all
+    address: all
+    method: md5
+    users: "{{ db_user }}"
+    create: true
+  become: yes
+  become_user: postgres
+  notify: Restart postgresql
+  tags: postgres
+
+- name: "Create a backup directory"
+  file:
+    path: "/var/lib/ouraapp/backups/uploads"
+    mode: 0777
+    state: directory
+  tags: postgres
+
+# Requires that current backup is already in remote server in above folder for next steps. Currently achieved via rsync in db_backup.sh.
+
+- name: Get files in backups folder
+  find:
+    paths: "/var/lib/ouraapp/backups/uploads"
+  register: found_files
+  tags: postgres
+
+- name: Get latest file
+  set_fact:
+    latest_file: "{{ found_files.files | sort(attribute='mtime') | last }}"
+  tags: postgres
+
+- name: Restore the database
+  postgresql_db:
+    state: restore
+    name: "{{db_name}}"
+    target: "{{ latest_file['path'] }}"
+  become: yes
+  become_user: postgres
+  when: new_db.changed
+  tags: postgres

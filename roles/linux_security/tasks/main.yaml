@@ -1,0 +1,68 @@
+---
+# roles/linux_security/tasks/main.yml
+
+# - import_tasks:
+
+# Necessary on Linode; harmless elsewhere
+# - name: Set hostname
+#   ansible.builtin.hostname:
+#     name: "{{ inventory_hostname }}"
+#   tags: linux_security
+
+- name: Update apt package cache
+  ansible.builtin.apt:
+    update_cache: yes
+    # First-time installation fails with this on.
+    # cache_valid_time: 3600
+  tags: linux_security
+
+- name: Upgrade all apt packages
+  ansible.builtin.apt:
+    upgrade: dist
+    force_apt_get: yes
+  tags: linux_security
+
+- name: Check if the OS thinks a reboot is needed
+  stat:
+    path: /var/run/reboot-required
+    get_md5: no
+  register: reboot_required_file
+  tags: linux_security
+
+- name: Reboot the box if necessary
+  ansible.builtin.reboot:
+    msg: "Reboot initiated by Ansible"
+    connect_timeout: 5
+    test_command: uptime
+  when: reboot_required_file.stat.exists
+  throttle: 1
+  tags: linux_security
+
+- name: Autoremove no longer needed packages
+  ansible.builtin.apt:
+    autoremove: yes
+  tags: linux_security
+
+- name: Update sshd configuration safely
+  ansible.builtin.template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config.d/opinfra.conf
+    owner: root
+    group: root
+    mode: "0600"
+    validate: /usr/sbin/sshd -t -f %s
+    backup: yes
+  register: sshd_config
+  tags: linux_security
+
+- name: Restart sshd if necessary
+  ansible.builtin.service:
+    name: "sshd"
+    state: restarted
+  when: sshd_config.changed
+  tags: linux_security
+
+- name: Install fail2ban
+  ansible.builtin.apt:
+    name: fail2ban
+  tags: linux_security

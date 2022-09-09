@@ -1,0 +1,121 @@
+---
+# Automatically accepts new hostkey after first connection.
+- name: Add StrictHostKeyChecking accept-new to ssh config
+  ansible.builtin.copy:
+    src: config
+    dest: /root/.ssh/config
+    owner: root
+    group: root
+    mode: "0644"
+  tags: jwa
+
+- name: Create a /srv directory if it does not exist
+  ansible.builtin.file:
+    path: /srv
+    state: directory
+    mode: "0755"
+    owner: "root"
+  tags: jwa
+
+- name: Create /srv/jwa directory if it does not exist
+  ansible.builtin.file:
+    path: /srv/jwa
+    state: directory
+    mode: "0755"
+    owner: "root"
+  tags: jwa
+
+- name: Read-write git checkout from github
+  ansible.builtin.git:
+    repo: https://github.com/jpdesc/Oura-Tracker-App.git
+    dest: /srv/jwa
+    force: yes
+  tags: jwa
+
+- name: Copy .env file if not in /srv/jwa
+  ansible.builtin.copy:
+    src: /Users/jackdescombes/projects/oura_proj/.env
+    dest: /srv/jwa/.env
+    mode: "0755"
+  tags: jwa
+
+- name: copy .flaskenv file if not in /srv/jwa
+  ansible.builtin.copy:
+    src: /Users/jackdescombes/projects/oura_proj/.flaskenv
+    dest: /srv/jwa/.flaskenv
+    mode: "0755"
+  tags: jwa
+
+- name: Ensure venv package is installed
+  apt:
+    name: python3-venv
+    state: present
+  tags: jwa
+
+- name: Manually create the initial virtualenv
+  command:
+    cmd: python3 -m venv /jwa_env
+    creates: "/jwa_env"
+  tags: jwa
+
+- name: Ensure pip is installed
+  apt:
+    name: python3-pip
+    state: present
+  tags: jwa
+
+- name: Install specified python requirements in indicated (virtualenv)
+  pip:
+    requirements: /srv/jwa/ouraapp/requirements.txt
+    virtualenv: /jwa_env
+    virtualenv_python: python3
+  tags: jwa
+
+- name: Copy file jwa.conf with owner and permissions
+  ansible.builtin.copy:
+    src: jwa.conf
+    dest: /etc/apache2/sites-available/jwa.conf
+    mode: "0644"
+  notify:
+    - Restart apache
+  tags: jwa
+
+- name: Copy file jwa-le-ssl.conf with owner and permissions
+  ansible.builtin.copy:
+    src: jwa-le-ssl.conf
+    dest: /etc/apache2/sites-available/jwa-le-ssl.conf
+    mode: "0644"
+  notify:
+    - Restart apache
+  tags: jwa
+
+- name: a2ensite jwa.conf
+  command: a2ensite jwa.conf
+  args:
+    creates: /etc/apache2/sites-enabled/jwa.conf
+  notify:
+    - Restart apache
+  tags: jwa
+
+- name: a2ensite jwa-le-ssl.conf
+  command: a2ensite jwa-le-ssl.conf
+  args:
+    creates: /etc/apache2/sites-enabled/jwa-le-ssl.conf
+  notify:
+    - Restart apache
+  tags: jwa
+
+- name: a2dissite
+  command: a2dissite 000-default.conf
+  args:
+    removes: /etc/apache2/sites-enabled/000-default.conf
+  notify:
+    - Restart apache
+  tags: jwa
+
+- name: Copy file keys.json with permissions
+  ansible.builtin.copy:
+    src: ~/projects/oura_proj/ouraapp/keys.json
+    dest: /srv/jwa/ouraapp/keys.json
+    mode: "0777"
+  tags: jwa

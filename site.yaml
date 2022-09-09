@@ -1,0 +1,11 @@
+---
+- hosts: webservers
+  roles:
+    - webservers
+- hosts: all
+  roles:
+    - linux_security
+- hosts: jwa
+  roles:
+    - postgres-config
+    - jwa

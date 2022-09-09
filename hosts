@@ -1,0 +1,10 @@
+all:
+  hosts:
+    server.jpdesc.com:
+  children:
+    webservers:
+      hosts:
+        server.jpdesc.com:
+    jwa:
+      hosts:
+        server.jpdesc.com:

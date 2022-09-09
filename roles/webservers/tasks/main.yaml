@@ -1,0 +1,17 @@
+---
+# roles/apache2_http/tasks/main.yml
+#
+
+# - import_tasks: firewall_ufw.yml
+
+- name: Install apache2
+  ansible.builtin.apt:
+    name: apache2
+
+- name: Install mod_wsgi
+  ansible.builtin.apt:
+    name: libapache2-mod-wsgi-py3
+
+- name: Install python3
+  ansible.builtin.apt:
+    name: python3

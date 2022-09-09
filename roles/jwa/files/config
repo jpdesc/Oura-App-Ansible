@@ -1,0 +1,7 @@
+Host *
+StrictHostKeyChecking accept-new
+
+Host server.jpdesc.com
+Hostname server.jpdesc.com
+User root
+IdentityFile /etc/ssh/ssh_host_ed25519_key
