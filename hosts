@@ -1,10 +1,14 @@
 all:
   hosts:
+    jenkins.jpdesc.com:
     server.jpdesc.com:
   children:
     webservers:
       hosts:
         server.jpdesc.com:
+    jenkins:
+      hosts:
+        jenkins.jpdesc.com:
     jwa:
       hosts:
         server.jpdesc.com:

@@ -1,0 +1,62 @@
+---
+- name: Create a /srv directory if it does not exist
+  ansible.builtin.file:
+    path: /srv
+    state: directory
+    mode: "0755"
+    owner: "root"
+  tags: jenkins
+
+- name: Create /srv/jenkins directory if it does not exist
+  ansible.builtin.file:
+    path: /srv/jenkins
+    state: directory
+    mode: "0755"
+    owner: "root"
+  tags: jenkins
+
+- name: Copy .env file if not in /srv/jenkins
+  ansible.builtin.copy:
+    src: /Users/jackdescombes/projects/oura_proj/.env
+    dest: /srv/jenkins/.env
+    mode: "0755"
+  tags: jenkins
+
+- name: copy .flaskenv file if not in /srv/jenkins
+  ansible.builtin.copy:
+    src: /Users/jackdescombes/projects/oura_proj/.flaskenv
+    dest: /srv/jenkins/.flaskenv
+    mode: "0755"
+  tags: jenkins
+
+- name: copy requirements file if not in /srv/jenkins
+  ansible.builtin.copy:
+    src: /Users/jackdescombes/projects/oura_proj/requirements.txt
+    dest: /srv/jenkins/requirements.txt
+    mode: "0755"
+  tags: jenkins
+
+- name: Ensure venv package is installed
+  apt:
+    name: python3-venv
+    state: present
+  tags: jenkins
+
+- name: Manually create the initial virtualenv
+  command:
+    cmd: python3 -m venv /venvs/jenkins_env
+    creates: "/venvs/jenkins_env"
+  tags: jenkins
+
+- name: Ensure pip is installed
+  apt:
+    name: python3-pip
+    state: present
+  tags: jenkins
+
+- name: Install specified python requirements in indicated (virtualenv)
+  pip:
+    requirements: /srv/jenkins/requirements.txt
+    virtualenv: /venvs/jenkins_env
+    virtualenv_python: python3
+  tags: jenkins

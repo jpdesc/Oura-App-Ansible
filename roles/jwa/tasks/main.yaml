@@ -25,11 +25,21 @@
     owner: "root"
   tags: jwa
 
+- name: Create /srv/jwa/logs directory if it does not exist
+  ansible.builtin.file:
+    path: /srv/jwa/logs
+    state: directory
+    mode: "0777"
+    owner: "root"
+  tags: jwa
+
 - name: Read-write git checkout from github
   ansible.builtin.git:
     repo: https://github.com/jpdesc/Oura-Tracker-App.git
     dest: /srv/jwa
     force: yes
+  notify:
+    - Restart apache
   tags: jwa
 
 - name: Copy .env file if not in /srv/jwa
@@ -66,7 +76,7 @@
 
 - name: Install specified python requirements in indicated (virtualenv)
   pip:
-    requirements: /srv/jwa/ouraapp/requirements.txt
+    requirements: /srv/jwa/requirements.txt
     virtualenv: /jwa_env
     virtualenv_python: python3
   tags: jwa
@@ -115,7 +125,21 @@
 
 - name: Copy file keys.json with permissions
   ansible.builtin.copy:
-    src: ~/projects/oura_proj/ouraapp/keys.json
-    dest: /srv/jwa/ouraapp/keys.json
+    src: ~/projects/oura_proj/ouraapp/weights/keys.json
+    dest: /srv/jwa/ouraapp/weights/keys.json
     mode: "0777"
+  tags: jwa
+
+- name: Copy aws cli credentials file
+  ansible.builtin.copy:
+    src: ~/.aws/credentials
+    dest: ~/.aws/credentials
+    mode: "0600"
+  tags: jwa
+
+- name: Copy aws cli configuration file
+  ansible.builtin.copy:
+    src: ~/.aws/config
+    dest: ~/.aws/config
+    mode: "0600"
   tags: jwa

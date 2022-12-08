@@ -9,3 +9,6 @@
   roles:
     - postgres-config
     - jwa
+- hosts: jenkins
+  roles:
+    - jenkins
