@@ -29,13 +29,6 @@
     mode: "0755"
   tags: jenkins
 
-- name: copy requirements file if not in /srv/jenkins
-  ansible.builtin.copy:
-    src: /Users/jackdescombes/projects/oura_proj/requirements.txt
-    dest: /srv/jenkins/requirements.txt
-    mode: "0755"
-  tags: jenkins
-
 - name: Ensure venv package is installed
   apt:
     name: python3-venv
@@ -52,11 +45,4 @@
   apt:
     name: python3-pip
     state: present
-  tags: jenkins
-
-- name: Install specified python requirements in indicated (virtualenv)
-  pip:
-    requirements: /srv/jenkins/requirements.txt
-    virtualenv: /venvs/jenkins_env
-    virtualenv_python: python3
   tags: jenkins
