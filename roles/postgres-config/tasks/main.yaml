@@ -6,19 +6,19 @@
       - python3-psycopg2
       - postgresql-contrib
     state: latest
-  tags: postgres
+  tags: postgres, jenkins_db
 
 - name: Enable Postgresql
   ansible.builtin.service:
     name: postgresql@14-main
     enabled: yes
-  tags: postgres
+  tags: postgres, jenkins_db
 
 - name: Start service postgresql, if not started
   ansible.builtin.service:
     name: postgresql@14-main
     state: started
-  tags: postgres
+  tags: postgres, jenkins_db
 
 - name: Ensure PostgreSQL is listening on server.jpdesc.com
   lineinfile:
@@ -27,7 +27,7 @@
     line: "listen_addresses = localhost"
     state: present
   notify: Restart postgresql
-  tags: postgres
+  tags: postgres, jenkins_db
 
 - name: Set "unix_socket_directories" in postgresql.conf
   lineinfile:
@@ -36,7 +36,7 @@
     line: "unix_socket_directories = '/var/run/postgresql, /tmp'"
     state: present
   notify: Restart postgresql
-  tags: postgres
+  tags: postgres, jenkins_db
 
 - name: Create the database specified in vars
   become: true
@@ -45,7 +45,7 @@
     template='template0'
     state=present
     port=5432
-  tags: postgres
+  tags: postgres, jenkins_db
 
 - name: Create db user for jwa.
   postgresql_user:
@@ -58,7 +58,7 @@
   become: yes
   become_user: postgres
   register: new_db
-  tags: postgres
+  tags: postgres, jenkins_db
 
 # - name: "Grant db user access to app db"
 #   postgresql_privs:
@@ -84,14 +84,14 @@
   become: yes
   become_user: postgres
   notify: Restart postgresql
-  tags: postgres
+  tags: postgres, jenkins_db
 
 - name: "Create a backup directory"
   file:
     path: "/var/lib/ouraapp/backups/uploads"
     mode: 0777
     state: directory
-  tags: postgres
+  tags: postgres, jenkins_db
 
 # Requires that current backup is already in remote server in above folder for next steps. Currently achieved via rsync in db_backup.sh.
 
@@ -99,12 +99,12 @@
   find:
     paths: "/var/lib/ouraapp/backups/uploads"
   register: found_files
-  tags: postgres
+  tags: postgres, jenkins_db
 
 - name: Get latest file
   set_fact:
     latest_file: "{{ found_files.files | sort(attribute='mtime') | last }}"
-  tags: postgres
+  tags: postgres, jenkins_db
 
 - name: Restore the database
   postgresql_db:
@@ -114,4 +114,4 @@
   become: yes
   become_user: postgres
   when: new_db.changed
-  tags: postgres
+  tags: postgres, jenkins_db
