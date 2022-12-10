@@ -1,46 +1,34 @@
 ---
-- name: Create a /srv directory if it does not exist
+
+jenkins_workspace: /var/lib/jenkins/workspace/jwa
+
+
+- name: Create logs directory in jenkins workspace if it does not exist
   ansible.builtin.file:
-    path: /srv
+    path: '{{jenkins_workspace}}/logs'
     state: directory
     mode: "0755"
     owner: "root"
   tags: jenkins
 
-- name: Create /srv/jenkins directory if it does not exist
-  ansible.builtin.file:
-    path: /srv/jenkins
-    state: directory
-    mode: "0755"
-    owner: "root"
-  tags: jenkins
-
-- name: Create /srv/jenkins/logs directory if it does not exist
-  ansible.builtin.file:
-    path: /srv/jenkins/logs
-    state: directory
-    mode: "0755"
-    owner: "root"
-  tags: jenkins
-
-- name: Copy .env file if not in /srv/jenkins
+- name: Copy .env file if not in jenkins workspace
   ansible.builtin.copy:
     src: /Users/jackdescombes/projects/oura_proj/.env
-    dest: /srv/jenkins/.env
+    dest: '{{jenkins_workspace}}/.env'
     mode: "0755"
   tags: jenkins
 
-- name: Copy setup.sh file if not in /srv/jenkins
-  ansible.builtin.copy:
-    src: /Users/jackdescombes/projects/oura_proj/setup.sh
-    dest: /srv/jenkins/setup.sh
-    mode: "0755"
-  tags: jenkins
+# - name: Copy setup.sh file if not in /srv/jenkins
+#   ansible.builtin.copy:
+#     src: /Users/jackdescombes/projects/oura_proj/setup.sh
+#     dest: /srv/jenkins/setup.sh
+#     mode: "0755"
+#   tags: jenkins
 
 - name: copy requirements file if not in /srv/jenkins
   ansible.builtin.copy:
     src: /Users/jackdescombes/projects/oura_proj/requirements.txt
-    dest: /srv/jenkins/requirements.txt
+    dest: '{{jenkins_workspace}}/requirements.txt'
     mode: "0755"
   tags: jenkins
 
