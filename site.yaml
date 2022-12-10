@@ -12,4 +12,4 @@
 - hosts: jenkins
   roles:
     - jenkins
-    - jenkins_db
+    - postgres-config
