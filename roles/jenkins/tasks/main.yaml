@@ -22,10 +22,10 @@
     mode: "0755"
   tags: jenkins
 
-- name: copy .flaskenv file if not in /srv/jenkins
+- name: Copy setup.sh file if not in /srv/jenkins
   ansible.builtin.copy:
-    src: /Users/jackdescombes/projects/oura_proj/.flaskenv
-    dest: /srv/jenkins/.flaskenv
+    src: /Users/jackdescombes/projects/oura_proj/setup.sh
+    dest: /srv/jenkins/setup.sh
     mode: "0755"
   tags: jenkins
 
