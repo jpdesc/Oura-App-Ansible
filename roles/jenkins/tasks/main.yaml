@@ -1,11 +1,7 @@
 ---
-
-jenkins_workspace: /var/lib/jenkins/workspace/jwa
-
-
-- name: Create logs directory in jenkins workspace if it does not exist
+- name: Create logs directory /srv/jenkins/logs if it does not exist
   ansible.builtin.file:
-    path: '{{jenkins_workspace}}/logs'
+    path: "/srv/jwa/logs"
     state: directory
     mode: "0755"
     owner: "root"
@@ -14,7 +10,7 @@ jenkins_workspace: /var/lib/jenkins/workspace/jwa
 - name: Copy .env file if not in jenkins workspace
   ansible.builtin.copy:
     src: /Users/jackdescombes/projects/oura_proj/.env
-    dest: '{{jenkins_workspace}}/.env'
+    dest: "/srv/jenkins/.env"
     mode: "0755"
   tags: jenkins
 
@@ -28,7 +24,7 @@ jenkins_workspace: /var/lib/jenkins/workspace/jwa
 - name: copy requirements file if not in /srv/jenkins
   ansible.builtin.copy:
     src: /Users/jackdescombes/projects/oura_proj/requirements.txt
-    dest: '{{jenkins_workspace}}/requirements.txt'
+    dest: "/srv/jenkins/requirements.txt"
     mode: "0755"
   tags: jenkins
 
