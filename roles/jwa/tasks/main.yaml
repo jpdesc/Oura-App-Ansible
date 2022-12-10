@@ -25,21 +25,13 @@
     owner: "root"
   tags: jwa
 
-- name: Create a /srv/logs directory if it does not exist
+- name: Create /srv/jwa/logs directory if it does not exist
   ansible.builtin.file:
-    path: /srv/logs
+    path: /srv/jwa/logs
     state: directory
-    mode: "0755"
+    mode: "0777"
     owner: "root"
   tags: jwa
-
-# - name: Create /srv/jwa/logs directory if it does not exist
-#   ansible.builtin.file:
-#     path: /srv/jwa/logs
-#     state: directory
-#     mode: "0777"
-#     owner: "root"
-#   tags: jwa
 
 - name: Read-write git checkout from github
   ansible.builtin.git:

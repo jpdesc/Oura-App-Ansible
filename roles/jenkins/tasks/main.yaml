@@ -7,14 +7,6 @@
     owner: "root"
   tags: jenkins
 
-- name: Create a /srv/logs directory if it does not exist
-  ansible.builtin.file:
-    path: /srv/logs
-    state: directory
-    mode: "0755"
-    owner: "root"
-  tags: jenkins
-
 - name: Create /srv/jenkins directory if it does not exist
   ansible.builtin.file:
     path: /srv/jenkins
