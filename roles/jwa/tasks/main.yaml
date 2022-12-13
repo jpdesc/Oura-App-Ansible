@@ -33,15 +33,6 @@
     owner: "root"
   tags: jwa
 
-- name: Read-write git checkout from github
-  ansible.builtin.git:
-    repo: https://github.com/jpdesc/Oura-Tracker-App.git
-    dest: /srv/jwa
-    force: yes
-  notify:
-    - Restart apache
-  tags: jwa
-
 - name: Copy .env file if not in /srv/jwa
   ansible.builtin.copy:
     src: /Users/jackdescombes/projects/oura_proj/.env

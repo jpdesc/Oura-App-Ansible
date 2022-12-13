@@ -137,13 +137,3 @@
   become_user: postgres
   when: new_db.changed
   tags: postgres
-
-- name: Restore the test database
-  postgresql_db:
-    state: restore
-    name: "{{test_db}}"
-    target: "{{ latest_file['path'] }}"
-  become: yes
-  become_user: postgres
-  when: test_db.changed
-  tags: postgres
