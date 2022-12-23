@@ -65,6 +65,12 @@
     state: present
   tags: jwa
 
+- name: Install Ansible
+  apt:
+    name: ansible
+    state: present
+  tags: jwa
+
 - name: Install specified python requirements in indicated (virtualenv)
   pip:
     requirements: /srv/jwa/requirements.txt
